@@ -36,7 +36,7 @@ Analyze the diff and generate:
 ```markdown
 ### 1. Commit summary  
 *…*
-
+\n\n
 ### 2. File‑by‑file details  
 **path/to/file.ext**  
 - **Change type**: added/removed/modified  
@@ -44,10 +44,10 @@ Analyze the diff and generate:
   - *…*
 
 Repeat for each changed file.
-
+\n\n
 ### 3. Context & comparison  
 - *…*
-
+\n\n
 
 ## WARNINGS & RULES
 

@@ -147,9 +147,10 @@ async def analyze_commit_endpoint(request: AnalyzeCommitRequest):
 
 
 @app.get("/commits")
-async def get_commits_endpoint(count: int = 10):
+async def get_commits_endpoint(repo_url: str, count: int = 10):
+    print(f"🔄 ---Getting commits from {repo_url}---")
     try:
-        repo = git.Repo(REPO_PATH)
+        repo = clone_repo(repo_url, REPO_PATH)
         commits = list(repo.iter_commits(max_count=count))
         commit_list = [
             {"hash": commit.hexsha, "message": commit.message.strip(), "author": commit.author.name, "date": commit.authored_datetime.isoformat()}

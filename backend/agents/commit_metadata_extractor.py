@@ -10,7 +10,6 @@ class CommitMetadataExtractorNode:
             self.repo = repo
         except git.InvalidGitRepositoryError:
             print(f"Error: Not a valid Git repository at {self.repo_path}")
-            # In a real app, you might raise an exception or handle this more gracefully
             self.repo = None
         except Exception as e:
             print(f"Error initializing GitPython Repo: {e}")
@@ -33,7 +32,6 @@ class CommitMetadataExtractorNode:
             commit_message = commit.message.strip()
             files_changed = list(commit.stats.files.keys())
 
-            # Get diff
             # For the initial commit, there's no parent, so diff against an empty tree
             if not commit.parents:
                 EMPTY_TREE_SHA1 = "4b825dc642cb6eb9a060e54bf8d69288fbee4904"
@@ -44,6 +42,7 @@ class CommitMetadataExtractorNode:
             diff_output = self.repo.git.diff(parent_commit.hexsha, commit.hexsha, unified=3)
 
             extracted_metadata = CommitMetadata(
+                hash=commit_hash,
                 author=author_name,
                 date=commit_date,
                 message=commit_message,

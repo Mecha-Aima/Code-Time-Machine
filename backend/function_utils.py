@@ -3,6 +3,31 @@ import shutil
 import os
 import stat
 
+def is_same_repo(repo_path: str, repo_url: str) -> bool:
+    """Check if the existing repo at repo_path matches the requested repo_url"""
+    try:
+        if not os.path.exists(repo_path):
+            return False
+            
+        if not os.path.exists(os.path.join(repo_path, '.git')):
+            return False
+            
+        repo = git.Repo(repo_path)
+        
+        # Check if remote origin matches the expected URL
+        if 'origin' in repo.remotes:
+            origin_url = repo.remotes.origin.url
+            # Normalize URLs for comparison (handle .git suffix and trailing slashes)
+            normalized_origin = origin_url.rstrip('/').rstrip('.git')
+            normalized_expected = repo_url.rstrip('/').rstrip('.git')
+            
+            return normalized_origin == normalized_expected
+        
+        return False
+        
+    except (git.InvalidGitRepositoryError, Exception):
+        return False
+
 def clone_repo(repo_url: str, repo_path: str):
     """Clone a repository from a URL to a local path
     
@@ -13,35 +38,43 @@ def clone_repo(repo_url: str, repo_path: str):
     Returns:
         git.Repo: The cloned repository
     """
-    # Check if repo exists and is non-empty
+    # Check if we already have the same repo
+    if is_same_repo(repo_path, repo_url):
+        print(f"✅ Same repo already exists at {repo_path}, skipping clone")
+        return git.Repo(repo_path)
+    
+    # Different repo or no repo exists - delete existing and clone fresh
     if os.path.exists(repo_path) and os.listdir(repo_path):
-        # Delete existing repo
+        print(f"🗑️ Different repo detected, deleting existing repo at {repo_path}")
         delete_cloned_repo(repo_path)
 
     # Check if repo path exists
     if not os.path.exists(repo_path):
-        print(f"❗️ Creating repo folder: {repo_path}")
+        print(f"📁 Creating repo folder: {repo_path}")
         os.makedirs(repo_path)
 
-    # Check if repo is already cloned
+    print(f"📥 Cloning {repo_url} to {repo_path}")
+    
     try:
+        # Try cloning main branch first
         repo = git.Repo.clone_from(repo_url, repo_path, branch="main")
-        if repo:
-            print(f"✅ Repo cloned successfully: {repo_path}")
-        else:
-            print(f"❌ Repo cloning failed: {repo_path}")
+        print(f"✅ Repo cloned successfully (main branch): {repo_path}")
         return repo
-    except Exception as e:
+    except git.GitCommandError:
         try:
+            # Fallback to master branch
             repo = git.Repo.clone_from(repo_url, repo_path, branch="master")
-            if repo:
-                print(f"✅ Repo cloned successfully: {repo_path}")
-            else:
-                print(f"❌ Repo cloning failed: {repo_path}")
+            print(f"✅ Repo cloned successfully (master branch): {repo_path}")
             return repo
-        except Exception as e:
-            print(f"❌ Repo cloning failed: {repo_path}")
-            return None
+        except git.GitCommandError:
+            try:
+                # Clone without specifying branch (get default)
+                repo = git.Repo.clone_from(repo_url, repo_path)
+                print(f"✅ Repo cloned successfully (default branch): {repo_path}")
+                return repo
+            except Exception as e:
+                print(f"❌ Repo cloning failed: {e}")
+                raise e
 
 def delete_cloned_repo(repo_path: str) -> bool:
     """

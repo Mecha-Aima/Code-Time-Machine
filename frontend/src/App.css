@@ -6,7 +6,14 @@
 
 body {
   font-family: 'Inter', 'Segoe UI', Arial, sans-serif;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background-image: 
+    linear-gradient(to right, rgba(229,231,235,0.8) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(229,231,235,0.8) 1px, transparent 1px),
+    radial-gradient(circle 1000px at 20% 100%, rgba(81, 90, 255, 0.3), transparent),
+    radial-gradient(circle 1000px at 100% 80%, rgba(59,130,246,0.3), transparent),
+    radial-gradient(circle 1000px at 20% 60%, rgba(81, 90, 255, 0.3), transparent),
+    radial-gradient(circle 1000px at 100% 40%, rgba(59,130,246,0.3), transparent);
+  background-size: 48px 48px, 48px 48px, 100% 100%, 100% 100%, 100% 100%, 100% 100%;
   min-height: 100vh;
   color: #333;
   line-height: 1.6;
@@ -19,8 +26,8 @@ body {
 }
 
 .ctm-header {
-  background: rgba(255, 255, 255, 0.95);
-  backdrop-filter: blur(10px);
+  background: rgba(255, 255, 255, 0.2);
+  backdrop-filter: blur(1px);
   border-bottom: 1px solid rgba(255, 255, 255, 0.2);
   padding: 2rem 0;
   text-align: center;
@@ -35,7 +42,7 @@ body {
   left: 0;
   right: 0;
   bottom: 0;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #1a2156 0%, #4957be 100%);
   opacity: 0.1;
   z-index: -1;
 }
@@ -45,12 +52,14 @@ body {
   margin: 0 auto;
   padding: 0 2rem;
   position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
 }
 
 .ctm-new-btn {
-  position: absolute;
-  top: 1rem;
-  right: 2rem;
   background: white;
   color: black;
   border: none;
@@ -61,6 +70,7 @@ body {
   cursor: pointer;
   transition: all 0.3s ease;
   box-shadow: 0 4px 8px rgba(102, 126, 234, 0.1);
+  margin-top: 1rem;
 }
 
 .ctm-new-btn:hover {
@@ -71,7 +81,7 @@ body {
 .ctm-header h1 {
   font-size: 3.5rem;
   font-weight: 800;
-  background: linear-gradient(135deg, #667eea, #764ba2);
+  background: linear-gradient(135deg, #1a2156, #4957be);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -133,7 +143,7 @@ body {
 
 .ctm-input:focus {
   outline: none;
-  border-color: #667eea;
+  border-color: #1a2156;
   background: white;
   box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
 }
@@ -153,7 +163,7 @@ body {
 }
 
 .ctm-btn {
-  background: linear-gradient(135deg, #667eea, #764ba2);
+  background: linear-gradient(135deg, #4957be, #4957be);
   color: white;
   border: none;
   border-radius: 12px;
@@ -189,13 +199,14 @@ body {
 
 .ctm-loading {
   text-align: center;
-  color: #667eea;
+  color: #1a2156;
   font-weight: 600;
   font-size: 1.1rem;
   padding: 2rem;
   background: white;
   border-radius: 12px;
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+  margin: 2rem auto;
 }
 
 .ctm-error {
@@ -226,7 +237,7 @@ body {
   color: #374151;
   margin-bottom: 1.5rem;
   padding-bottom: 0.75rem;
-  border-bottom: 3px solid #667eea;
+  border-bottom: 3px solid #1a2156;
   display: inline-block;
 }
 
@@ -257,7 +268,7 @@ body {
 
 .ctm-commit-hash {
   font-family: 'Monaco', 'Fira Code', monospace;
-  background: linear-gradient(135deg, #667eea, #764ba2);
+  background: linear-gradient(135deg, #1a2156, #4957be);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -293,6 +304,251 @@ body {
   color: #374151;
 }
 
+/* New Commit History Table Styles */
+.ctm-table-container {
+  overflow-x: auto;
+  border-radius: 12px;
+  border: 1px solid #e5e7eb;
+  background: white;
+}
+
+.ctm-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.95rem;
+}
+
+.ctm-table thead {
+  background: linear-gradient(135deg, #1a2156, #4957be);
+  color: white;
+}
+
+.ctm-table thead th {
+  padding: 1rem 1.5rem;
+  text-align: left;
+  font-weight: 600;
+  font-size: 0.9rem;
+  letter-spacing: 0.05em;
+  border: none;
+}
+
+.ctm-table tbody tr {
+  border-bottom: 1px solid #f3f4f6;
+  transition: background-color 0.2s ease;
+}
+
+.ctm-table tbody tr:hover {
+  background-color: #f9fafb;
+}
+
+.ctm-table tbody tr:last-child {
+  border-bottom: none;
+}
+
+.ctm-table tbody td {
+  padding: 1rem 1.5rem;
+  vertical-align: top;
+  border: none;
+}
+
+.ctm-commit-hash {
+  background: linear-gradient(135deg, #1a2156, #4957be);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  font-weight: 600;
+  font-size: 0.85rem;
+  padding: 0.25rem 0.5rem;
+  border-radius: 6px;
+  background-color: #f8fafc;
+  border: 1px solid #e5e7eb;
+}
+
+.ctm-commit-message {
+  color: #374151;
+  font-weight: 500;
+  max-width: 300px;
+  word-wrap: break-word;
+}
+
+.ctm-commit-author {
+  color: #6b7280;
+  font-weight: 500;
+}
+
+.ctm-date-time {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.ctm-date {
+  color: #374151;
+  font-weight: 500;
+  font-size: 0.9rem;
+}
+
+.ctm-time {
+  color: #9ca3af;
+  font-size: 0.8rem;
+}
+
+/* Analysis Section Styles */
+.ctm-analysis-section {
+  margin-bottom: 2rem;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.ctm-section-title {
+  background: linear-gradient(135deg, #1a2156, #4957be);
+  color: white;
+  padding: 1rem 1.5rem;
+  margin: 0;
+  font-size: 1.1rem;
+  font-weight: 600;
+  border: none;
+}
+
+.ctm-metadata-grid {
+  padding: 1.5rem;
+  display: grid;
+  gap: 1rem;
+  background: #fafbfc;
+}
+
+.ctm-metadata-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+}
+
+.ctm-metadata-item.ctm-metadata-message {
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.5rem;
+}
+
+.ctm-metadata-label {
+  color: #6b7280;
+  font-weight: 600;
+  font-size: 0.9rem;
+  min-width: 60px;
+  flex-shrink: 0;
+}
+
+.ctm-metadata-value {
+  color: #374151;
+  font-weight: 500;
+}
+
+.ctm-metadata-value code {
+  background: #f3f4f6;
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  font-family: 'Monaco', 'Fira Code', monospace;
+  font-size: 0.85rem;
+  border: 1px solid #e5e7eb;
+}
+
+.ctm-markdown-content {
+  padding: 1.5rem;
+  background: white;
+}
+
+.ctm-markdown-content h1,
+.ctm-markdown-content h2,
+.ctm-markdown-content h3,
+.ctm-markdown-content h4,
+.ctm-markdown-content h5,
+.ctm-markdown-content h6 {
+  color: #374151;
+  margin-top: 1.5rem;
+  margin-bottom: 0.75rem;
+  font-weight: 600;
+}
+
+.ctm-markdown-content h1 {
+  font-size: 1.5rem;
+  border-bottom: 2px solid #1a2156;
+  padding-bottom: 0.5rem;
+}
+
+.ctm-markdown-content h2 {
+  font-size: 1.3rem;
+}
+
+.ctm-markdown-content h3 {
+  font-size: 1.1rem;
+  color: #1a2156;
+}
+
+.ctm-markdown-content p {
+  margin-bottom: 1rem;
+  line-height: 1.6;
+  color: #4b5563;
+}
+
+.ctm-markdown-content ul,
+.ctm-markdown-content ol {
+  margin-bottom: 1rem;
+  padding-left: 1.5rem;
+}
+
+.ctm-markdown-content li {
+  margin-bottom: 0.5rem;
+  color: #4b5563;
+  line-height: 1.5;
+}
+
+.ctm-markdown-content code {
+  background: #f3f4f6;
+  padding: 0.2rem 0.4rem;
+  border-radius: 4px;
+  font-family: 'Monaco', 'Fira Code', monospace;
+  font-size: 0.85rem;
+  color: #e53e3e;
+  border: 1px solid #e5e7eb;
+}
+
+.ctm-markdown-content pre {
+  background: #f8fafc;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 1rem;
+  overflow-x: auto;
+  margin-bottom: 1rem;
+}
+
+.ctm-markdown-content pre code {
+  background: none;
+  padding: 0;
+  border: none;
+  color: #374151;
+  font-size: 0.9rem;
+}
+
+.ctm-markdown-content blockquote {
+  border-left: 4px solid #1a2156;
+  padding-left: 1rem;
+  margin: 1rem 0;
+  color: #6b7280;
+  font-style: italic;
+  background: #f9fafb;
+  padding: 1rem;
+  border-radius: 0 8px 8px 0;
+}
+
+.ctm-markdown-content strong {
+  color: #374151;
+  font-weight: 600;
+}
+
+.ctm-markdown-content em {
+  color: #6b7280;
+}
+
 @media (max-width: 768px) {
   .ctm-header h1 {
     font-size: 2.5rem;
@@ -326,13 +582,29 @@ body {
     align-items: center;
   }
   
-  .ctm-commit {
-    grid-template-columns: 1fr;
-    gap: 0.5rem;
-    text-align: left;
+  .ctm-table-container {
+    font-size: 0.85rem;
   }
   
-  .ctm-commit-date {
-    text-align: left;
+  .ctm-table thead th,
+  .ctm-table tbody td {
+    padding: 0.75rem 0.5rem;
+  }
+  
+  .ctm-commit-message {
+    max-width: 200px;
+  }
+  
+  .ctm-metadata-grid {
+    padding: 1rem;
+  }
+  
+  .ctm-markdown-content {
+    padding: 1rem;
+  }
+  
+  .ctm-section-title {
+    padding: 0.75rem 1rem;
+    font-size: 1rem;
   }
 }
