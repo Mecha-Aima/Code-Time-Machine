@@ -3,82 +3,87 @@ from pydantic import BaseModel
 import git
 import os # Required for repo_path in CommitMetadataExtractorNode
 from langgraph.graph import StateGraph, END
+import asyncio
+from fastapi.middleware.cors import CORSMiddleware
 
-from .models.graph_state import GraphState
-from .agents.commit_metadata_extractor import CommitMetadataExtractorNode
-from .agents.code_change_analyzer import CodeChangeAnalyzerNode
-from .agents.fix_suggester import FixSuggesterNode
+from models.graph_state import GraphState
+from agents import FixSuggesterNode, StoreResultsNode, CodeChangeAnalyzerNode, CommitMetadataExtractorNode
+from function_utils import *
 
-# Initialize FastAPI app
+REPO_PATH = os.path.join(os.path.dirname(__file__), 'cloned_repo')
+
 app = FastAPI()
 
-# Determine repo_path once, assuming it's the project root for now
-# This should ideally be configurable
-PROJECT_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
-# Initialize nodes with the determined repo_path
-metadata_extractor = CommitMetadataExtractorNode(repo_path=PROJECT_ROOT)
-code_analyzer = CodeChangeAnalyzerNode()
-fix_suggester = FixSuggesterNode()
 
-# Define the graph
-workflow = StateGraph(GraphState)
+def init_graph(repo_path: str):
+    metadata_extractor = CommitMetadataExtractorNode(repo_url="https://github.com/Mecha-Aima/Research-assistant-agent", repo_path=repo_path)
+    code_analyzer = CodeChangeAnalyzerNode()
+    fix_suggester = FixSuggesterNode()
+    store_results = StoreResultsNode()
 
-# Add nodes to the graph
-workflow.add_node("metadata_extractor", metadata_extractor.extract_metadata)
-workflow.add_node("code_analyzer", code_analyzer.analyze_changes)
-workflow.add_node("fix_suggester", fix_suggester.suggest_fix)
+    workflow = StateGraph(GraphState)
 
-# Define the edges
-workflow.set_entry_point("metadata_extractor")
-workflow.add_edge("metadata_extractor", "code_analyzer")
-workflow.add_edge("code_analyzer", "fix_suggester")
-workflow.add_edge("fix_suggester", END)
+    workflow.add_node("metadata_extractor", metadata_extractor.extract_metadata)
+    workflow.add_node("code_analyzer", code_analyzer.analyze_changes)
+    workflow.add_node("fix_suggester", fix_suggester.suggest_fix)
+    workflow.add_node("store_results", store_results.store_results)
 
-# Compile the graph
-graph = workflow.compile()
+    workflow.set_entry_point("metadata_extractor")
+    workflow.add_edge("metadata_extractor", "code_analyzer")
+    workflow.add_edge("code_analyzer", "fix_suggester")
+    workflow.add_edge("fix_suggester", "store_results")
+    workflow.add_edge("store_results", END)
 
-# Example of how to run the graph (for testing purposes)
-if __name__ == "__main__":
-    # This is a basic example. In a real application, 
-    # you'd get the commit_hash from a Git hook, API request, etc.
+    graph = workflow.compile()
+
+    return graph
+
+
+async def main():
     initial_state = GraphState(
-        commit_hash="test_commit_123",
+        commit_hash="90e5a21687fef349a765562ccb33600afec28d04",
         commit_metadata=None, # type: ignore
-        summary=None,
+        analysis=None,
         fix_suggestion=None,
-        user_query="How can I improve this code?"
+        user_query="How can I improve this code?",
+        repo_name="langgraph"
     )
 
-    print("Running LangGraph pipeline...")
-    # Note: LangGraph's stream method returns an iterator.
-    # We'll consume it to see the final state.
+    graph = init_graph(REPO_PATH)
+
+    print("🔄 ---Running LangGraph pipeline---")
     final_state = None
-    for s in graph.stream(initial_state):
+    async for s in graph.astream(initial_state):
         # s is a dictionary where keys are node names and values are their outputs
         print(f"\nState after node {list(s.keys())[0]}:")
         print(s)
         final_state = s[list(s.keys())[0]] # Get the state from the last executed node
     
-    print("\n---FINAL STATE---")
+    print("\n🟥 ---FINAL STATE---")
     if final_state:
         print(f"Commit Hash: {final_state.get('commit_hash')}")
         print(f"Commit Metadata: {final_state.get('commit_metadata')}")
-        print(f"Summary: {final_state.get('summary')}")
+        print(f"Analysis: {final_state.get('analysis')}")
         print(f"Fix Suggestion: {final_state.get('fix_suggestion')}")
         print(f"User Query: {final_state.get('user_query')}")
     else:
         print("Graph execution did not produce a final state.")
 
+# Example of how to run the graph (for testing purposes)
+if __name__ == "__main__":
+    asyncio.run(main())
+    delete_cloned_repo(REPO_PATH)
+
 # To run this example: GOOGLE_API_KEY=your_key_here python -m backend.main
 # (You'll need to set the GOOGLE_API_KEY environment variable, though it's not used by placeholders yet)
-
-from fastapi import FastAPI, HTTPException
-from pydantic import BaseModel
-import git
-import os # Required for repo_path in CommitMetadataExtractorNode
-
-# ... (keep existing imports and graph setup) ...
 
 class AnalyzeCommitRequest(BaseModel):
     commit_hash: str
@@ -86,26 +91,20 @@ class AnalyzeCommitRequest(BaseModel):
 class QueryRequest(BaseModel):
     query: str
 
-# Determine repo_path once, assuming it's the project root for now
-# This should ideally be configurable
-PROJECT_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
+
 
 @app.post("/analyze-commit")
 async def analyze_commit_endpoint(request: AnalyzeCommitRequest):
     initial_state_api = GraphState(
         commit_hash=request.commit_hash,
         commit_metadata=None, # type: ignore
-        summary=None,
+        analysis=None,
         fix_suggestion=None,
         user_query=None # User query can be part of a different flow or added later
     )
     
     final_api_state = None
     try:
-        # Use ainvoke for a single final state, which is more suitable for an API endpoint
-        # Ensure your graph nodes are compatible with async if using ainvoke directly in an async context
-        # For simplicity, if graph.stream is synchronous, wrap it or use a background task.
-        # Assuming graph.stream is okay to call like this for now based on original example.
         for s in graph.stream(initial_state_api, {"recursion_limit": 10}): # Added recursion_limit for safety
             # The final state is the accumulation of all node outputs
             # We need to merge the states from the stream
@@ -119,7 +118,7 @@ async def analyze_commit_endpoint(request: AnalyzeCommitRequest):
         # Ensure all expected keys are present, providing defaults if not
         return {
             "commit_metadata": final_api_state.get("commit_metadata"),
-            "summary": final_api_state.get("summary"),
+            "analysis": final_api_state.get("analysis"),
             "fix_suggestion": final_api_state.get("fix_suggestion")
         }
     except git.exc.GitCommandError as e:
@@ -132,7 +131,7 @@ async def analyze_commit_endpoint(request: AnalyzeCommitRequest):
 @app.get("/commits")
 async def get_commits_endpoint(count: int = 10):
     try:
-        repo = git.Repo(PROJECT_ROOT)
+        repo = git.Repo(REPO_PATH)
         commits = list(repo.iter_commits(max_count=count))
         commit_list = [
             {"hash": commit.hexsha, "message": commit.message.strip(), "author": commit.author.name, "date": commit.authored_datetime.isoformat()}
@@ -149,3 +148,8 @@ async def query_endpoint(request: QueryRequest):
     # Placeholder for user-written queries
     # This will be implemented later
     return {"message": "Query endpoint not yet implemented", "received_query": request.query}
+
+@app.post("/rm-repo")
+async def rm_repo_endpoint():
+    delete_cloned_repo(REPO_PATH)
+    return {"message": "Repo deleted successfully"}

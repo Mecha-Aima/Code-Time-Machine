@@ -8,29 +8,34 @@ class FixSuggesterNode:
 
     def suggest_fix(self, state: GraphState) -> GraphState:
         print("---SUGGESTING FIXES---")
-        summary = state.get("summary")
+        analysis = state.get("analysis")
         diff = state.get("commit_metadata", {}).get("diff") # Safely get diff
         commit_message = state.get("commit_metadata", {}).get("message") # Safely get commit message
         user_query = state.get("user_query")
 
-        if not summary:
-            raise ValueError("Summary not found in state for fix suggestion.")
+        if not analysis:
+            raise ValueError("Analysis not found in state for fix suggestion.")
         if not diff:
             print("Warning: Diff not found in state for fix suggestion.")
         if not commit_message:
             print("Warning: Commit message not found in state for fix suggestion.")
 
-        # TODO: Fill in the prompt for Gemini API
         prompt = f"""Based on the following information:
-Summary of changes: {summary}
+Analysis of changes: {analysis}
 Code diff: {diff if diff else 'N/A'}
 Commit message: {commit_message if commit_message else 'N/A'}
 User query: {user_query if user_query else 'N/A'}
 
-Detect potential regressions or suboptimal patterns in the code changes. Suggest a hypothetical fix in code form (it can be partial)."""
+## TASKS:
+- Identify potential bugs, performance implications, edge cases, or backward‑compatibility concerns in the code changes.
+- Suggest a hypothetical fix in code form (it can be partial).
+- Suggest concise code improvements, refactoring ideas, test additions, or documentation gaps.
+
+If there are no issues or suggestions, just say "No issues found."
+"""
         
         try:
-            response = self.client.models.generate_content(model="gemini-1.5-flash", contents=prompt)
+            response = self.client.models.generate_content(model="gemini-2.0-flash", contents=prompt)
             fix_suggestion = response.text
         except Exception as e:
             print(f"Error generating fix suggestion with Gemini: {e}")

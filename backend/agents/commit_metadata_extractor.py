@@ -1,14 +1,15 @@
 from models.graph_state import GraphState, CommitMetadata
+from function_utils import *
 import git
 from datetime import datetime
 import os
 
 class CommitMetadataExtractorNode:
-    def __init__(self, repo_path: str = None):
+    def __init__(self, repo_url: str,repo_path: str = None):
         # If no repo_path is provided, default to the parent directory of the backend
         self.repo_path = repo_path if repo_path else os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
         try:
-            self.repo = git.Repo(self.repo_path)
+            self.repo = clone_repo(repo_url, self.repo_path)
         except git.InvalidGitRepositoryError:
             print(f"Error: Not a valid Git repository at {self.repo_path}")
             # In a real app, you might raise an exception or handle this more gracefully
@@ -32,26 +33,24 @@ class CommitMetadataExtractorNode:
             # Convert commit.authored_datetime to ISO 8601 string format
             commit_date = commit.authored_datetime.isoformat()
             commit_message = commit.message.strip()
+            files_changed = list(commit.stats.files.keys())
 
             # Get diff
             # For the initial commit, there's no parent, so diff against an empty tree
             if not commit.parents:
-                parent_commit = self.repo.tree() # Empty tree
+                EMPTY_TREE_SHA1 = "4b825dc642cb6eb9a060e54bf8d69288fbee4904"
+                parent_commit = self.repo.tree(EMPTY_TREE_SHA1)
             else:
                 parent_commit = commit.parents[0]
             
-            diff_output = self.repo.git.diff(parent_commit.hexsha, commit.hexsha, unified=0)
-            # If diff_output is empty, it might be the first commit or no changes
-            # For the very first commit, diff against git.NULL_TREE might be more appropriate
-            # but repo.tree() for an empty repo or parent_commit for subsequent ones should work.
-            # If diff is empty and it's not the first commit, it means no file changes (e.g. merge commit with no content changes)
-            # For simplicity, we'll use the diff as is.
+            diff_output = self.repo.git.diff(parent_commit.hexsha, commit.hexsha, unified=3)
 
             extracted_metadata = CommitMetadata(
                 author=author_name,
                 date=commit_date,
                 message=commit_message,
-                diff=diff_output
+                diff=diff_output,
+                files_changed=files_changed
             )
 
             state["commit_metadata"] = extracted_metadata

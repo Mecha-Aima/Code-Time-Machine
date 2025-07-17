@@ -5,10 +5,12 @@ class CommitMetadata(TypedDict):
     date: str
     message: str
     diff: str
+    files_changed: list[str]
 
 class GraphState(TypedDict):
+    repo_name : Optional[str]
     commit_hash: str
     commit_metadata: CommitMetadata
-    summary: Optional[str]
+    analysis: Optional[str]
     fix_suggestion: Optional[str]
     user_query: Optional[str]
