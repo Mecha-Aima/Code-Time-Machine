@@ -8,7 +8,6 @@ class CommitMetadata(TypedDict):
     files_changed: list[str]
 
 class GraphState(TypedDict):
-    repo_name : Optional[str]
     commit_hash: str
     commit_metadata: CommitMetadata
     analysis: Optional[str]

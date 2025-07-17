@@ -1,0 +1,338 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Inter', 'Segoe UI', Arial, sans-serif;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  min-height: 100vh;
+  color: #333;
+  line-height: 1.6;
+}
+
+.ctm-container {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.ctm-header {
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+  padding: 2rem 0;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+
+.ctm-header::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  opacity: 0.1;
+  z-index: -1;
+}
+
+.ctm-header-content {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 2rem;
+  position: relative;
+}
+
+.ctm-new-btn {
+  position: absolute;
+  top: 1rem;
+  right: 2rem;
+  background: white;
+  color: black;
+  border: none;
+  border-radius: 8px;
+  padding: 0.75rem 1.5rem;
+  font-weight: 600;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 8px rgba(102, 126, 234, 0.1);
+}
+
+.ctm-new-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+}
+
+.ctm-header h1 {
+  font-size: 3.5rem;
+  font-weight: 800;
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  margin-bottom: 1rem;
+  letter-spacing: -0.02em;
+}
+
+.ctm-desc {
+  font-size: 1.25rem;
+  color: #64748b;
+  max-width: 600px;
+  margin: 0 auto;
+  font-weight: 400;
+}
+
+.ctm-main {
+  flex: 1;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 3rem 2rem;
+  width: 100%;
+}
+
+.ctm-form-container {
+  background: white;
+  border-radius: 20px;
+  padding: 2.5rem;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+  margin-bottom: 3rem;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.ctm-form {
+  display: grid;
+  gap: 2rem;
+}
+
+.ctm-form-group {
+  display: flex;
+  flex-direction: column;
+}
+
+.ctm-form label {
+  font-weight: 600;
+  color: #374151;
+  margin-bottom: 0.5rem;
+  font-size: 1.1rem;
+}
+
+.ctm-input {
+  padding: 1rem 1.25rem;
+  border: 2px solid #e5e7eb;
+  border-radius: 12px;
+  font-size: 1rem;
+  background: #f9fafb;
+  transition: all 0.3s ease;
+  font-family: inherit;
+}
+
+.ctm-input:focus {
+  outline: none;
+  border-color: #667eea;
+  background: white;
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+.ctm-optional {
+  font-size: 0.9rem;
+  color: #9ca3af;
+  font-weight: 400;
+  margin-left: 0.5rem;
+}
+
+.ctm-btn-row {
+  display: flex;
+  gap: 1rem;
+  margin-top: 1rem;
+  justify-content: center;
+}
+
+.ctm-btn {
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  color: white;
+  border: none;
+  border-radius: 12px;
+  padding: 1rem 2rem;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+  min-width: 140px;
+}
+
+.ctm-btn:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+}
+
+.ctm-btn:disabled {
+  background: linear-gradient(135deg, #d1d5db, #9ca3af);
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+.ctm-btn.ctm-analyze {
+  background: linear-gradient(135deg, #10b981, #059669);
+  box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);
+}
+
+.ctm-btn.ctm-analyze:hover:not(:disabled) {
+  box-shadow: 0 6px 20px rgba(16, 185, 129, 0.4);
+}
+
+.ctm-loading {
+  text-align: center;
+  color: #667eea;
+  font-weight: 600;
+  font-size: 1.1rem;
+  padding: 2rem;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+}
+
+.ctm-error {
+  text-align: center;
+  color: #ef4444;
+  font-weight: 600;
+  font-size: 1.1rem;
+  padding: 2rem;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+  border-left: 4px solid #ef4444;
+}
+
+.ctm-content-section {
+  background: white;
+  border-radius: 20px;
+  padding: 2.5rem;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+  margin-bottom: 2rem;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.ctm-history h2,
+.ctm-analysis h2 {
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: #374151;
+  margin-bottom: 1.5rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 3px solid #667eea;
+  display: inline-block;
+}
+
+.ctm-history ul {
+  list-style: none;
+}
+
+.ctm-commit {
+  display: grid;
+  grid-template-columns: auto 1fr auto auto;
+  gap: 1.5rem;
+  padding: 1.25rem;
+  border-bottom: 1px solid #f3f4f6;
+  font-size: 1rem;
+  align-items: center;
+  transition: all 0.2s ease;
+}
+
+.ctm-commit:hover {
+  background: #f9fafb;
+  border-radius: 8px;
+  border-bottom-color: transparent;
+}
+
+.ctm-commit:last-child {
+  border-bottom: none;
+}
+
+.ctm-commit-hash {
+  font-family: 'Monaco', 'Fira Code', monospace;
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.ctm-commit-msg {
+  color: #374151;
+  font-weight: 500;
+}
+
+.ctm-commit-author {
+  color: #6b7280;
+  font-weight: 500;
+}
+
+.ctm-commit-date {
+  color: #9ca3af;
+  font-size: 0.9rem;
+  text-align: right;
+}
+
+.ctm-analysis pre {
+  background: #f8fafc;
+  border: 2px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 2rem;
+  font-size: 0.95rem;
+  overflow-x: auto;
+  font-family: 'Monaco', 'Fira Code', monospace;
+  line-height: 1.6;
+  color: #374151;
+}
+
+@media (max-width: 768px) {
+  .ctm-header h1 {
+    font-size: 2.5rem;
+  }
+  
+  .ctm-desc {
+    font-size: 1.1rem;
+  }
+  
+  .ctm-main {
+    padding: 2rem 1rem;
+  }
+  
+  .ctm-form-container,
+  .ctm-content-section {
+    padding: 1.5rem;
+    border-radius: 16px;
+  }
+  
+  .ctm-new-btn {
+    position: static;
+    margin-bottom: 1rem;
+  }
+  
+  .ctm-header-content {
+    padding: 0 1rem;
+  }
+  
+  .ctm-btn-row {
+    flex-direction: column;
+    align-items: center;
+  }
+  
+  .ctm-commit {
+    grid-template-columns: 1fr;
+    gap: 0.5rem;
+    text-align: left;
+  }
+  
+  .ctm-commit-date {
+    text-align: left;
+  }
+}

@@ -1,7 +1,8 @@
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
+from typing import Optional
 import git
-import os # Required for repo_path in CommitMetadataExtractorNode
+import os
 from langgraph.graph import StateGraph, END
 import asyncio
 from fastapi.middleware.cors import CORSMiddleware
@@ -16,15 +17,15 @@ app = FastAPI()
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=["http://localhost:3000"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
 
-def init_graph(repo_path: str):
-    metadata_extractor = CommitMetadataExtractorNode(repo_url="https://github.com/Mecha-Aima/Research-assistant-agent", repo_path=repo_path)
+def init_graph(repo: git.Repo):
+    metadata_extractor = CommitMetadataExtractorNode(repo)
     code_analyzer = CodeChangeAnalyzerNode()
     fix_suggester = FixSuggesterNode()
     store_results = StoreResultsNode()
@@ -53,8 +54,7 @@ async def main():
         commit_metadata=None, # type: ignore
         analysis=None,
         fix_suggestion=None,
-        user_query="How can I improve this code?",
-        repo_name="langgraph"
+        user_query="How can I improve this code?"
     )
 
     graph = init_graph(REPO_PATH)
@@ -82,11 +82,11 @@ if __name__ == "__main__":
     asyncio.run(main())
     delete_cloned_repo(REPO_PATH)
 
-# To run this example: GOOGLE_API_KEY=your_key_here python -m backend.main
-# (You'll need to set the GOOGLE_API_KEY environment variable, though it's not used by placeholders yet)
 
+# FastAPI Endpoints
 class AnalyzeCommitRequest(BaseModel):
-    commit_hash: str
+    commit_hash: Optional[str]
+    repo_url: str
 
 class QueryRequest(BaseModel):
     query: str
@@ -95,22 +95,39 @@ class QueryRequest(BaseModel):
 
 @app.post("/analyze-commit")
 async def analyze_commit_endpoint(request: AnalyzeCommitRequest):
+    print("🔄 ---Running LangGraph pipeline---")
+    try:
+        repo = clone_repo(request.repo_url, REPO_PATH)
+    except git.InvalidGitRepositoryError:
+        print(f"Error: Not a valid Git repository at {request.repo_url}")
+        raise HTTPException(status_code=400, detail=f"Not a valid Git repository at {request.repo_url}")
+    except Exception as e:
+        print(f"Error initializing GitPython Repo: {e}")
+        raise HTTPException(status_code=500, detail=f"Error initializing GitPython Repo: {e}")
+        
+    if request.commit_hash is None:
+        commit = get_most_recent_commit(repo)
+        request.commit_hash = commit.hexsha
+    
     initial_state_api = GraphState(
         commit_hash=request.commit_hash,
         commit_metadata=None, # type: ignore
         analysis=None,
         fix_suggestion=None,
-        user_query=None # User query can be part of a different flow or added later
+        user_query=None,
     )
+
+    graph = init_graph(repo)
     
     final_api_state = None
     try:
-        for s in graph.stream(initial_state_api, {"recursion_limit": 10}): # Added recursion_limit for safety
+        async for s in graph.astream(initial_state_api, {"recursion_limit": 10}): # Added recursion_limit for safety
             # The final state is the accumulation of all node outputs
             # We need to merge the states from the stream
             if final_api_state is None:
                 final_api_state = {}
             final_api_state.update(s[list(s.keys())[0]])
+            print("✅ Processed node: ", s[list(s.keys())[0]])
 
         if final_api_state and final_api_state.get("commit_metadata") and final_api_state.get("commit_metadata").get("author") == "Error":
              raise HTTPException(status_code=500, detail=f"Error processing commit: {final_api_state.get('commit_metadata').get('message')}")
@@ -128,6 +145,7 @@ async def analyze_commit_endpoint(request: AnalyzeCommitRequest):
         print(f"Unhandled error in analyze_commit_endpoint: {e}")
         raise HTTPException(status_code=500, detail=f"An unexpected error occurred: {e}")
 
+
 @app.get("/commits")
 async def get_commits_endpoint(count: int = 10):
     try:
@@ -143,13 +161,19 @@ async def get_commits_endpoint(count: int = 10):
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error fetching commits: {e}")
 
+
 @app.post("/query")
 async def query_endpoint(request: QueryRequest):
     # Placeholder for user-written queries
     # This will be implemented later
     return {"message": "Query endpoint not yet implemented", "received_query": request.query}
 
+
 @app.post("/rm-repo")
 async def rm_repo_endpoint():
     delete_cloned_repo(REPO_PATH)
     return {"message": "Repo deleted successfully"}
+
+@app.get("/")
+async def root():
+    return {"message": "Code Time Machine"}

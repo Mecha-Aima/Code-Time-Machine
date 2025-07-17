@@ -13,18 +13,35 @@ def clone_repo(repo_url: str, repo_path: str):
     Returns:
         git.Repo: The cloned repository
     """
+    # Check if repo exists and is non-empty
+    if os.path.exists(repo_path) and os.listdir(repo_path):
+        # Delete existing repo
+        delete_cloned_repo(repo_path)
 
     # Check if repo path exists
     if not os.path.exists(repo_path):
-        print(f"❗️ Repo path does not exist: {repo_path}")
+        print(f"❗️ Creating repo folder: {repo_path}")
         os.makedirs(repo_path)
 
-    repo = git.Repo.clone_from(repo_url, repo_path, branch="main")
-    if repo:
-        print(f"✅ Repo cloned successfully: {repo_path}")
-    else:
-        print(f"❌ Repo cloning failed: {repo_path}")
-    return repo
+    # Check if repo is already cloned
+    try:
+        repo = git.Repo.clone_from(repo_url, repo_path, branch="main")
+        if repo:
+            print(f"✅ Repo cloned successfully: {repo_path}")
+        else:
+            print(f"❌ Repo cloning failed: {repo_path}")
+        return repo
+    except Exception as e:
+        try:
+            repo = git.Repo.clone_from(repo_url, repo_path, branch="master")
+            if repo:
+                print(f"✅ Repo cloned successfully: {repo_path}")
+            else:
+                print(f"❌ Repo cloning failed: {repo_path}")
+            return repo
+        except Exception as e:
+            print(f"❌ Repo cloning failed: {repo_path}")
+            return None
 
 def delete_cloned_repo(repo_path: str) -> bool:
     """
@@ -64,3 +81,9 @@ def delete_cloned_repo(repo_path: str) -> bool:
     except Exception as e:
         print(f"Error deleting repository {repo_path}: {e}")
         return False
+    
+def get_most_recent_commit(repo: git.Repo) -> git.Commit:
+    """
+    Get the most recent commit in a repository
+    """
+    return repo.head.commit

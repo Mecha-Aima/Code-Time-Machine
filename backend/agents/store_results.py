@@ -15,7 +15,6 @@ class StoreResultsNode:
         cursor.execute("""
             CREATE TABLE IF NOT EXISTS results (
                 commit_hash TEXT PRIMARY KEY,
-                repo_name TEXT,
                 commit_metadata TEXT,
                 analysis TEXT
             )
@@ -35,13 +34,12 @@ class StoreResultsNode:
             commit_hash = state["commit_hash"]
             commit_metadata = str(state["commit_metadata"])  # Convert to string for storage
             analysis = state["analysis"]
-            repo_name = state.get("repo_name", "unknown")  # Default if not present
 
             # Store the results in the database
             cursor.execute("""
-                INSERT OR REPLACE INTO results (commit_hash, repo_name, commit_metadata, analysis)
-                VALUES (?, ?, ?, ?)
-            """, (commit_hash, repo_name, commit_metadata, analysis))
+                INSERT OR REPLACE INTO results (commit_hash, commit_metadata, analysis)
+                VALUES (?, ?, ?)
+            """, (commit_hash, commit_metadata, analysis))
             conn.commit()
 
             print(f"Stored results for commit {commit_hash}")

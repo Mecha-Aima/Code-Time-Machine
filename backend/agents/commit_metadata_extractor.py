@@ -5,11 +5,9 @@ from datetime import datetime
 import os
 
 class CommitMetadataExtractorNode:
-    def __init__(self, repo_url: str,repo_path: str = None):
-        # If no repo_path is provided, default to the parent directory of the backend
-        self.repo_path = repo_path if repo_path else os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
+    def __init__(self, repo: git.Repo):
         try:
-            self.repo = clone_repo(repo_url, self.repo_path)
+            self.repo = repo
         except git.InvalidGitRepositoryError:
             print(f"Error: Not a valid Git repository at {self.repo_path}")
             # In a real app, you might raise an exception or handle this more gracefully
