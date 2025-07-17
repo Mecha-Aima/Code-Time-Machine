@@ -11,7 +11,7 @@ body {
     linear-gradient(to bottom, rgba(229,231,235,0.8) 1px, transparent 1px),
     radial-gradient(circle 1000px at 20% 100%, rgba(81, 90, 255, 0.3), transparent),
     radial-gradient(circle 1000px at 100% 80%, rgba(59,130,246,0.3), transparent),
-    radial-gradient(circle 1000px at 20% 60%, rgba(81, 90, 255, 0.3), transparent),
+    radial-gradient(circle 1000px at 0% 60%, rgba(81, 90, 255, 0.3), transparent),
     radial-gradient(circle 1000px at 100% 40%, rgba(59,130,246,0.3), transparent);
   background-size: 48px 48px, 48px 48px, 100% 100%, 100% 100%, 100% 100%, 100% 100%;
   min-height: 100vh;
